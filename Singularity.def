@@ -1,0 +1,46 @@
+Bootstrap: docker
+From: nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
+
+%files
+    /home/steven/download/requirements_linux.txt /app/requirements_linux.txt
+
+%post
+    # 更新包管理器和安装必要的依赖
+    apt-get update && apt-get install -y \
+        python3 \
+        python3-pip \
+        python3-venv \
+        build-essential \
+        libssl-dev \
+        libffi-dev
+
+    # 检查 CUDA 库是否存在
+    ldconfig -p | grep libcudart || { echo "libcudart not found"; exit 1; }
+    ldconfig -p | grep libcudnn || { echo "libcudnn not found"; exit 1; }
+
+    # 创建虚拟环境并安装 Python 包
+    python3 -m venv /app/venv
+    . /app/venv/bin/activate
+    pip install --no-cache-dir -r /app/requirements_linux.txt
+    pip cache purge
+    deactivate
+
+    # 清理缓存以减小镜像大小
+    pip3 cache purge
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+%environment
+    # 自动加载虚拟环境路径
+    export PATH=/app/venv/bin:$PATH
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH
+    export PYTHONPATH=/app:$PYTHONPATH
+
+%runscript
+    # 定义容器启动时(以'singularity run'命令运行时)的默认命令
+    echo "Welcome to the Deep Learning Singularity Environment!"
+    echo "To activate the virtual environment, run: . /app/venv/bin/activate"
+
+%labels
+    Author XiangYue
+    Version 1.0
+    Description A Singularity container with PyTorch (CUDA support)
