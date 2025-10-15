@@ -1,0 +1,23 @@
+# 1. Dataset
+folder_path: ./publish
+
+# 2. Upstream
+up_input_dim: 3
+up_input_len : 1440
+up_d_model: 128
+up_nhead: 8
+up_num_layers: 4
+up_dropout : 0.1
+
+# 3. Midstream
+mid_mode: 'weighted_capacity'
+# mid_model_key: 'x_up', 'C', 'D'
+mid_model_key: 'x_up' # Only for single mode
+# mid_fusion_methods: ['no', 'concat', 'add', 'attn']
+mid_fusion_methods: 'add'
+mid_input_dim: 3
+mid_d_model: 128
+mid_num_layers: 4 # 4 or 6
+mid_nhead: 8
+mid_num_features: 32
+mid_dropout : 0.1
